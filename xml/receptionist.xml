@@ -31,7 +31,7 @@
                                 <Action ID="DialogConfirmation" prompt="Is your name {name_value}?"/>
                             </Sequence>
                             <Sequence>
-                                <Action ID="Speak" say_text="What would you like to drink?"/>
+                                <Action ID="Speak" say_text="{name_value}, what would you like to drink?"/>
                                 <Action ID="Listen" listen_text="{understood}"/>
                                 <Action ID="Query" Intention="drink" intention_value="{drink_value}" text="{understood}"/>
                                 <Action ID="DialogConfirmation" prompt="Is {drink_value} your choice of preference?"/>
@@ -46,7 +46,7 @@
                             <Condition ID="IsDetected" confidence="0.6" entity="person" frames="{frames}" max_depth="2" max_entities="1" order="depth_nearest"/>
                         </ReactiveFallback>
                         <Action ID="LookAt" tf_frame="{frames}"/>
-                        <Action ID="Speak" say_text="Hi, this is {name}, and their favorite drink is {favourite_drink}"/>
+                        <Action ID="Speak" say_text="Hi, this is {name_value}, and their favorite drink is {favourite_drink}"/>
                     </ReactiveSequence>
                     <ReactiveFallback>
                         <Condition ID="IsSittable" tf_frame="chair_frame"/>
