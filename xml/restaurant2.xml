@@ -1,0 +1,256 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="InitRestaurant" attention_home="" start_location="{tf_bar}"/>
+            <Sequence>
+                <SubTree ID="find_waving_person"/>
+                <Action ID="PublishCurrentPose" tf_location="{observation_point}"/>
+                <Action ID="MoveTo" distance_tolerance="0.5" is_truncated="true" tf_frame="{tf_customer}"/>
+                <SubTree ID="find_person"/>
+                <Action ID="LookAt" tf_frame="{tf_customer}"/>
+                <Action ID="FilterEntity" frame="{tf_customer}" lambda="0.1"/>
+                <Action ID="Speak" param="" say_text="What would you like to order?"/>
+                <SubTree ID="listen"/>
+                <SubTree ID="query"/>
+                <Action ID="Speak" param="{oder}" say_text="So you want to order a"/>
+                <Action ID="Speak" param="" say_text="Please say yes or no"/>
+                <SubTree ID="confirm"/>
+                <Action ID="LookAt" tf_frame="{attention_home}"/>
+                <Action ID="MoveTo" distance_tolerance="0" is_truncated="false" tf_frame="{tf_bar}"/>
+                <SubTree ID="find_person"/>
+                <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
+                <Action ID="LookAt" tf_frame="person_0_filtered"/>
+                <Action ID="Speak" param="{order}" say_text="Hi, the customer would like some"/>
+                <Action ID="Speak" param="" say_text="please put it in front of me where I can see it"/>
+            </Sequence>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="confirm">
+        <ReactiveSequence>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            </RetryUntilSuccessful>
+            <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
+            <Action ID="DialogConfirmation" prompt=""/>
+        </ReactiveSequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="find_cus">
+        <ReactiveFallback>
+            <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            <Action ID="Pan" period="10" pitch_angle="0" range="45"/>
+        </ReactiveFallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="find_cust">
+        <ReactiveFallback>
+            <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            <Action ID="Pan" period="10" pitch_angle="0" range="45"/>
+        </ReactiveFallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="find_customer">
+        <Fallback>
+            <Timeout msec="15000">
+                <ReactiveFallback>
+                    <Action ID="IsWaving" cam_frame="head_front_camera_link_color_optical_frame" customer_frame="{tf_customer}"/>
+                    <Action ID="Pan" period="10" pitch_angle="0" range="45"/>
+                </ReactiveFallback>
+            </Timeout>
+            <ReactiveFallback>
+                <Action ID="IsWaving" cam_frame="head_front_camera_link_color_optical_frame" customer_frame="{tf_customer}"/>
+                <Action ID="Spin" speed="0.2"/>
+            </ReactiveFallback>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="find_person">
+        <ReactiveFallback>
+            <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            <Action ID="Pan" period="10" pitch_angle="0" range="45"/>
+        </ReactiveFallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="find_waving_person">
+        <Fallback>
+            <Timeout msec="15000">
+                <ReactiveFallback>
+                    <Action ID="IsWaving" cam_frame="head_front_camera_link_color_optical_frame" customer_frame="{tf_customer}"/>
+                    <Action ID="Pan" period="10" pitch_angle="0" range="45"/>
+                </ReactiveFallback>
+            </Timeout>
+            <ReactiveFallback>
+                <Action ID="IsWaving" cam_frame="head_front_camera_link_color_optical_frame" customer_frame="{tf_customer}"/>
+                <Action ID="Spin" speed="0.2"/>
+            </ReactiveFallback>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="listen">
+        <ReactiveSequence>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            </RetryUntilSuccessful>
+            <Action ID="FilterEntity" frame="person_0" lambda="0.1"/>
+            <Action ID="Listen" listen_text="{understood}"/>
+        </ReactiveSequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="query">
+        <ReactiveSequence>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Condition ID="IsDetected" confidence="0.6" entity="person" frames="" max_depth="2" max_entities="1" order="depth_nearest"/>
+            </RetryUntilSuccessful>
+            <Action ID="FilterEntity" frame="" lambda=""/>
+            <Action ID="Query" Intention="order" intention_value="{order}" text="{understood}"/>
+        </ReactiveSequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="AddGuestToCount">
+            <inout_port name="n">Number of guests introduced</inout_port>
+        </Action>
+        <Action ID="CalculateGoal">
+            <inout_port name="goal"/>
+        </Action>
+        <Condition ID="CheckStop"/>
+        <Action ID="DetectEntity">
+            <input_port default="person" name="entity"/>
+        </Action>
+        <Action ID="DialogConfirmation">
+            <input_port name="prompt"/>
+        </Action>
+        <Action ID="Dialogue">
+            <input_port default="Hi welcome to the party" name="say_text"/>
+        </Action>
+        <Action ID="ExtractBagPosition">
+            <output_port name="position"/>
+        </Action>
+        <Action ID="FilterEntity">
+            <inout_port name="frame"/>
+            <inout_port name="lambda"/>
+        </Action>
+        <Action ID="FollowEntity">
+            <input_port default="person" name="entity_frame"/>
+        </Action>
+        <Action ID="GoBack">
+            <input_port default="0.2" name="velocity"/>
+        </Action>
+        <Condition ID="HasEntityStopped">
+            <input_port name="entity_frame"/>
+            <input_port name="tolerance"/>
+        </Condition>
+        <Action ID="InitRestaurant">
+            <output_port name="attention_home"/>
+            <output_port default="0" name="start_location"/>
+        </Action>
+        <Condition ID="IsDetected">
+            <input_port default="0.6" name="confidence"/>
+            <input_port default="person" name="entity"/>
+            <output_port name="frames">array of frames</output_port>
+            <input_port default="2" name="max_depth">value in meters</input_port>
+            <input_port default="1" name="max_entities"/>
+            <input_port default="depth_nearest" name="order">[depth_nearest, left_to_right]^</input_port>
+        </Condition>
+        <Condition ID="IsEntityMoving">
+            <input_port default="0.5" name="distance_tolerance"/>
+        </Condition>
+        <Condition ID="IsPointing">
+            <output_port default="front" name="tf_target">the tf frame of the object to navigate</output_port>
+        </Condition>
+        <Condition ID="IsSittable">
+            <output_port name="tf_frame"/>
+        </Condition>
+        <Action ID="IsWaving">
+            <input_port name="cam_frame"/>
+            <input_port name="customer_frame"/>
+        </Action>
+        <Action ID="Listen">
+            <output_port name="listen_text">What the robot understood</output_port>
+        </Action>
+        <Action ID="LookAround">
+            <input_port name="direction"/>
+        </Action>
+        <Action ID="LookAt">
+            <input_port name="tf_frame"/>
+        </Action>
+        <Action ID="LookAtPerson"/>
+        <Action ID="MoveArmTo">
+            <input_port name="tf_frame"/>
+            <input_port name="tolerance"/>
+        </Action>
+        <Action ID="MoveArmToPredefined">
+            <input_port default="offer" name="position"/>
+        </Action>
+        <Action ID="MoveGripperTo">
+            <input_port default="open" name="Pos"/>
+        </Action>
+        <Action ID="MoveHeadTo">
+            <input_port name="angle"/>
+        </Action>
+        <Action ID="MoveTo">
+            <input_port default="0" name="distance_tolerance"/>
+            <input_port name="is_truncated"/>
+            <input_port default="object1" name="tf_frame"/>
+        </Action>
+        <Action ID="MoveToPredefined">
+            <inout_port name="pose"/>
+        </Action>
+        <Action ID="Pan">
+            <inout_port name="period"/>
+            <inout_port name="pitch_angle"/>
+            <inout_port name="range"/>
+        </Action>
+        <Action ID="PointAt">
+            <input_port name="frame_to_point"/>
+        </Action>
+        <Action ID="PrintTarget">
+            <inout_port name="target"/>
+        </Action>
+        <Action ID="PublishCurrentPose">
+            <output_port name="tf_location"/>
+        </Action>
+        <Action ID="Query">
+            <input_port default="name" name="Intention"/>
+            <output_port name="intention_value"/>
+            <input_port name="text">what human said</input_port>
+        </Action>
+        <Action ID="SetWaypoints"/>
+        <Action ID="SetWp"/>
+        <Action ID="Speak">
+            <input_port name="param"/>
+            <input_port name="say_text"/>
+        </Action>
+        <Action ID="Spin">
+            <input_port name="speed"/>
+        </Action>
+        <Action ID="StoreDetection">
+            <input_port name="entity"/>
+            <input_port name="id"/>
+        </Action>
+        <SubTree ID="confirm"/>
+        <SubTree ID="find_cus"/>
+        <SubTree ID="find_cust"/>
+        <SubTree ID="find_customer"/>
+        <SubTree ID="find_person"/>
+        <SubTree ID="find_waving_person"/>
+        <Condition ID="isListened">
+            <output_port name="gotten_parameters"/>
+            <input_port name="needed_parameters"/>
+            <output_port name="say_text"/>
+        </Condition>
+        <Condition ID="isPersonDetected">
+            <output_port name="say_text"/>
+        </Condition>
+        <Condition ID="isReceived">
+            <output_port name="needed_parameters"/>
+            <input_port name="received_parameters"/>
+        </Condition>
+        <SubTree ID="listen"/>
+        <SubTree ID="query"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
