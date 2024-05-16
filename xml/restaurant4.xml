@@ -18,6 +18,7 @@
                     <Action ID="MoveTo" distance_tolerance="0" is_truncated="false" tf_frame="{tf_bar}"/>
                     <SubTree ID="find_person"/>
                     <SubTree ID="collect_full_order"/>
+                    <SubTree ID="pick_basket"/>
                     <Action ID="MoveTo" distance_tolerance="0.5" is_truncated="true" tf_frame="{tf_customer}"/>
                     <SubTree ID="deliver_order"/>
                     <Action ID="MoveTo" distance_tolerance="0" is_truncated="" tf_frame="{observation_point}"/>
@@ -86,13 +87,6 @@
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
-    <BehaviorTree ID="confirm_wants_more">
-        <Sequence>
-            <Action ID="Speak" param="" say_text="Would you like to order more? Plase say yes or no"/>
-            <SubTree ID="confirm"/>
-        </Sequence>
-    </BehaviorTree>
-    <!-- ////////// -->
     <BehaviorTree ID="deliver_order">
         <Sequence>
             <SubTree ID="find_person"/>
@@ -152,7 +146,12 @@
     <!-- ////////// -->
     <BehaviorTree ID="get_order_n">
         <Sequence>
-            <SubTree ID="confirm_wants_more"/>
+            <Sequence>
+                <Action ID="Speak" param="" say_text="Would you like to order more?"/>
+                <SubTree ID="listen"/>
+                <SubTree ID="query_wants_more"/>
+                <Condition ID="WantsMore" wants="{more}"/>
+            </Sequence>
             <Sequence>
                 <Action ID="Speak" param="" say_text="What else would you like?"/>
                 <SubTree ID="listen"/>
@@ -398,7 +397,6 @@
         <SubTree ID="collect_order"/>
         <SubTree ID="confirm"/>
         <SubTree ID="confirm_order"/>
-        <SubTree ID="confirm_wants_more"/>
         <SubTree ID="deliver_order"/>
         <SubTree ID="find_person"/>
         <SubTree ID="find_waving_person"/>
